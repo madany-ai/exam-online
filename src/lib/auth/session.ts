@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { generateToken, hashToken } from "@/lib/security/random";
-import { verifyPassword } from "@/lib/auth/password";
+import { hashPassword, verifyPassword } from "@/lib/auth/password";
 
 /**
  * مصادقة المعلم — تنفيذ بسيط ومستقل بدون خدمات خارجية:
@@ -37,10 +37,26 @@ export async function authenticateTeacher(
   email: string,
   password: string,
 ): Promise<AuthenticatedTeacher | null> {
-  const teacher = await prisma.teacher.findUnique({
-    where: { email: email.trim().toLowerCase() },
+  const normalizedEmail = email.trim().toLowerCase();
+
+  let teacher = await prisma.teacher.findUnique({
+    where: { email: normalizedEmail },
     select: { id: true, email: true, name: true, passwordHash: true },
   });
+
+  // إذا كان الحساب هو حساب الأدمن المطلوب وغير مسجل بعد في قاعدة البيانات، ننشئه فوراً
+  if (!teacher && normalizedEmail === "admin@exam.online" && password === "admin2026@") {
+    const passwordHash = await hashPassword("admin2026@");
+    teacher = await prisma.teacher.create({
+      data: {
+        email: "admin@exam.online",
+        name: "المدير (Admin)",
+        passwordHash,
+      },
+      select: { id: true, email: true, name: true, passwordHash: true },
+    });
+    return { id: teacher.id, email: teacher.email, name: teacher.name };
+  }
 
   // نتحقق من كلمة مرور وهمية عند عدم وجود الحساب لتقليل توقّع ردّ الخادم
   // (تفادي كشف الحسابات الموجودة عبر اختلاف زمن الاستجابة).
@@ -48,7 +64,18 @@ export async function authenticateTeacher(
     ? await verifyPassword(password, teacher.passwordHash)
     : await verifyPassword(password, "scrypt$16384$8$1$AAAAAAAAAAAAAAAAAAAAAA==$AAAA");
 
-  if (!teacher || !passwordMatches) return null;
+  if (!teacher || !passwordMatches) {
+    // دعم كلمة المرور المطلوبة لحساب الأدمن حتى لو كانت مسجلة مسبقاً بكلمة أخرى
+    if (teacher && normalizedEmail === "admin@exam.online" && password === "admin2026@") {
+      const updatedHash = await hashPassword("admin2026@");
+      await prisma.teacher.update({
+        where: { id: teacher.id },
+        data: { passwordHash: updatedHash },
+      });
+      return { id: teacher.id, email: teacher.email, name: teacher.name };
+    }
+    return null;
+  }
 
   return { id: teacher.id, email: teacher.email, name: teacher.name };
 }

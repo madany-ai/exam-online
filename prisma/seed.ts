@@ -10,8 +10,8 @@ import { generateToken } from "../src/lib/security/random";
  * لا تُشغَّل تلقائياً أثناء البناء أو النشر، ولا تُنشر كبيانات إنتاج.
  */
 
-const DEMO_EMAIL = "teacher@example.com";
-const DEMO_PASSWORD = "Teacher12345";
+const DEMO_EMAIL = "admin@exam.online";
+const DEMO_PASSWORD = "admin2026@";
 
 async function main() {
   const parsed = parseImportPayload(JSON.stringify(EXAMPLE_IMPORT_DOCUMENT));
@@ -23,8 +23,8 @@ async function main() {
 
   const teacher = await prisma.teacher.upsert({
     where: { email: DEMO_EMAIL },
-    create: { email: DEMO_EMAIL, name: "أ. محمد (حساب تجريبي)", passwordHash },
-    update: {},
+    create: { email: DEMO_EMAIL, name: "المدير (Admin)", passwordHash },
+    update: { passwordHash, name: "المدير (Admin)" },
     select: { id: true },
   });
 

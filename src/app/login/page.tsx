@@ -26,16 +26,16 @@ export default async function LoginPage() {
 
         <Card className="border-border/80 bg-card/90 backdrop-blur-md shadow-2xl">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-lg">تسجيل الدخول</CardTitle>
+            <CardTitle className="text-lg">بوابة المعلمين</CardTitle>
             <CardDescription>
-              أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى لوحة التحكم.
+              سجّل دخولك أو أنشئ حساباً جديداً لإدارة الاختبارات ومتابعة النتائج.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <LoginForm />
             <div className="flex items-center justify-center gap-1.5 border-t border-border/60 pt-4 text-center text-xs text-muted-foreground">
               <ShieldCheck className="size-3.5 text-primary" />
-              <span>بيئة محمية — تُنشأ حسابات المعلمين عبر مدير النظام</span>
+              <span>منصة اختبارات ذكية ومحمية للمعلمين والطلاب</span>
             </div>
           </CardContent>
         </Card>

@@ -3,6 +3,8 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { prisma } from "@/lib/db/prisma";
+import { hashPassword } from "@/lib/auth/password";
 import {
   authenticateTeacher,
   createTeacherSession,
@@ -15,8 +17,7 @@ import {
 } from "@/lib/security/rate-limit";
 
 /**
- * إجراءات المصادقة.
- * لا يوجد تسجيل عام: الحسابات تُنشأ عبر `npm run teacher:create`.
+ * إجراءات المصادقة (تسجيل الدخول وإنشاء حساب معلّم جديد لأي بريد إلكتروني).
  */
 
 export type AuthActionState = { error?: string } | undefined;
@@ -72,7 +73,65 @@ export async function loginAction(
   redirect("/dashboard");
 }
 
+const registerSchema = z.object({
+  name: z.string().trim().min(2, "الاسم مطلوب (حرفان على الأقل)").max(100, "الاسم طويل جداً"),
+  email: z.string().trim().min(1, "أدخل البريد الإلكتروني").email("بريد إلكتروني غير صالح"),
+  password: z.string().min(6, "كلمة المرور يجب ألا تقل عن 6 أحرف"),
+});
+
+export async function registerAction(
+  _previousState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = registerSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "بيانات التسجيل غير صالحة." };
+  }
+
+  const reqHeaders = await headers();
+  const ip = extractClientIp(reqHeaders);
+  const normalizedEmail = parsed.data.email.toLowerCase();
+
+  const ipRate = checkRateLimit(
+    `register-ip:${ip}`,
+    RATE_LIMIT_PROFILES.LOGIN.limit,
+    RATE_LIMIT_PROFILES.LOGIN.windowMs,
+  );
+  if (!ipRate.allowed) {
+    return {
+      error: `محاولات كثيرة جداً. يرجى الانتظار ${ipRate.retryAfterSeconds} ثانية.`,
+    };
+  }
+
+  const existing = await prisma.teacher.findUnique({
+    where: { email: normalizedEmail },
+    select: { id: true },
+  });
+  if (existing) {
+    return { error: "هذا البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول مباشرة." };
+  }
+
+  const passwordHash = await hashPassword(parsed.data.password);
+  const teacher = await prisma.teacher.create({
+    data: {
+      email: normalizedEmail,
+      name: parsed.data.name,
+      passwordHash,
+    },
+    select: { id: true },
+  });
+
+  await createTeacherSession(teacher.id);
+  redirect("/dashboard");
+}
+
 export async function logoutAction() {
   await destroyTeacherSession();
   redirect("/login");
 }
+
