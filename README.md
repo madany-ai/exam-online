@@ -1,197 +1,214 @@
-# 🎓 منصة الاختبارات الإلكترونية (Exam Online)
+# 🎓 Exam Online
 
-منصة اختبارات إلكترونية حديثة باللغة العربية (RTL-First)، مبنية باستخدام **Next.js 16** و **PostgreSQL (Neon)** و **Tailwind CSS**. تدعم استيراد الأسئلة عبر الذكاء الاصطناعي (AI Prompt)، وتتميز بنظام **PWA** وتصميم متجاوب بالكامل مع الهواتف الذكية، ومحسّنة للعمل بكفاءة فائقة على السيرفرات وقواعد البيانات المجانية (Vercel & Neon Free Tier).
+A modern, high-performance, Arabic-first (RTL) online examination platform built with **Next.js 16 (App Router)**, **PostgreSQL (Neon)**, **Prisma 7**, and **Tailwind CSS**.
 
----
-
-## 🌟 أبرز المميزات
-
-### 1. 👨‍🏫 واجهة المعلم (Teacher Dashboard)
-- **استيراد فوري للأسئلة عبر الذكاء الاصطناعي**:
-  - برومبت ذكي مدمج وجاهز للنسخ لاستخدامه مع (ChatGPT / Claude / Gemini) لتحويل أي مذكرة أو منهج إلى ملف JSON منظم.
-  - فحص محلي وفوري (0ms) لبنية الملف مع إظهار الأخطاء ورقم السؤال الناقص فوراً عبر تنبيهات تفاعلية.
-  - شاشة مراجعة ومعاينة للأسئلة قبل النشر النهائي.
-- **إعدادات تحكّم كاملة في الاختبار**:
-  - مدة الامتحان بالدقائق مع مؤقت عد تنازلي.
-  - خلط ترتيب الأسئلة والخيارات عشوائياً لكل طالب لمنع الغش.
-  - تحديد عدد المحاولات المسموح بها لكل طالب.
-  - ضبط توقيت فتح وإغلاق نافذة الاختبار (StartsAt / EndsAt).
-  - تحديد طريقة ظهور النتيجة: فورية بعد التسليم مباشرة (`IMMEDIATE`) أو بقرار المعلم (`MANUAL`).
-- **لوحة متابعة النتائج**:
-  - إحصائيات عامة للمحاولات والدرجات.
-  - تصدير كشوف الدرجات بملف Excel / CSV باللغة العربية مع ترميز UTF-8 BOM.
-
-### 2. 📱 تجربة الطالب (Student Runner & PWA)
-- **تطبيق ويب تقدمي (PWA)**:
-  - إمكانية تثبيت المنصة كتطبيق على شاشة الهاتف أو الكمبيوتر (Installable App).
-  - تخزين مؤقت خفيف وآمن للأيقونات والخطوط وواجهة التطبيق عبر Service Worker.
-- **متجاوب 100% مع شاشات الموبايل**:
-  - تجربة مريحة وسلسة على مختلف أحجام الشاشات حتى أصغر شاشات الهواتف (iPhone SE / 390px).
-- **حفظ تلقائي ذكي (Smart Autosave)**:
-  - حفظ تلقائي غير محسوس لإجابات الطالب مع منع تكرار الطلبات غير الضرورية لتوفير استهلاك السيرفر.
-- **تسليم تلقائي عند انتهاء الوقت**:
-  - مؤقت دقيق يُنهي المحاولة ويرسل الإجابات تلقائياً بمجرد انتهاء المهلة.
-- **مراجعة الأخطاء والإجابات النموذجية**:
-  - في حال تفعيل إظهار النتيجة، يستعرض الطالب نتيجته مع تبويبات ذكية: (جميع الأسئلة - الأخطاء فقط - الإجابات الصحيحة) مع الشرح وتوضيح الإجابة الصحيحة.
-
-### 3. 🛡️ حماية وأداء فائق للسيرفرات المجانية (Free Tier Optimizations)
-- **محدّد معدل الطلبات (LRU Rate Limiter)**:
-  - خوارزمية محددة الذاكرة ($O(1)$) لحماية السيرفر من هجمات الإغراق (DDoS/Spam) دون استهلاك الرام.
-  - حماية ذكية لشبكات المدارس وسناتر الدروس: فصل حد شبكة الـ Wi-Fi المشتركة عن حد الطالب الفردي حتى لا يُحظر الطلاب الآخرين.
-- **كاش الأسئلة في الذاكرة (Exam Questions Cache)**:
-  - تخزين مؤقت للأسئلة والخيارات في الذاكرة يوفر أكثر من 70% من استعلامات قاعدة البيانات أثناء أوقات الذروة.
-- **اتصال موثوق مع Neon PostgreSQL**:
-  - تكييف مجمّع الاتصالات (`pg.Pool`) لمعالجة فترات الخمول واستيقاظ قاعدة البيانات المجانية (Cold-starts) بدون حدوث أخطاء 500.
+Features AI-assisted question generation, Progressive Web App (PWA) installation, a mobile-first dark UI, and deep architectural optimizations for **free-tier hosting (Vercel & Neon Free Tier)** with zero database overload.
 
 ---
 
-## 🛠️ التقنيات المستخدمة (Tech Stack)
+## 🌟 Key Features
 
-| التقنية | الاستخدام |
+### 1. 👨‍🏫 Teacher Dashboard
+- **AI-Powered Question Import**:
+  - Includes a pre-configured, tested prompt for (ChatGPT / Claude / Gemini) to transform raw textbook material and PDFs into validated JSON question banks.
+  - **Zero-Latency (0ms) Client Validation**: Form settings and JSON schemas are validated locally in the browser with instant visual feedback and error notifications before hitting the server.
+  - Interactive question review and approval workflow before publishing.
+- **Granular Exam Controls**:
+  - Adjustable countdown duration timer in minutes.
+  - Question and option randomization (shuffling) per student to prevent cheating.
+  - Maximum attempt restrictions (per student phone number or identifier).
+  - Scheduled availability windows (`startsAt` and `endsAt`).
+  - Result visibility policies: Immediate release upon completion (`IMMEDIATE`) or teacher-controlled manual release (`MANUAL`).
+- **Submissions & Analytics**:
+  - Live student progress monitoring.
+  - Export submission results to UTF-8 BOM CSV / Excel compatible with Arabic characters.
+
+### 2. 📱 Student Experience & PWA
+- **Progressive Web App (PWA)**:
+  - Fully installable on iOS, Android, and Desktop as a standalone application.
+  - Custom Service Worker caching app shells, fonts, and static assets for lightning-fast loading.
+  - Non-intrusive safety policies: API endpoints and exam submissions are strictly **Network-First** to prevent stale timers or cached responses.
+- **Mobile-First & RTL Interface**:
+  - Fluid, responsive interface using Cairo Arabic typography, designed and tested for small mobile viewports (e.g., iPhone SE / 390px).
+- **Smart Autosave**:
+  - Transparent background saving with payload deduplication; identical answer states skip network requests to minimize server bandwidth.
+- **Deadline Enforcement**:
+  - Synchronized server-validated countdown timer with automatic attempt finalization and submission when time expires.
+- **Comprehensive Results & Mistakes Review**:
+  - When enabled, students can review their scores alongside interactive filter tabs (`All Questions`, `Mistakes Only`, `Correct Answers`), complete with model answer explanations.
+
+### 3. 🛡️ Free-Tier Serverless & Neon PostgreSQL Optimizations
+- **Bounded LRU Rate Limiting ($O(1)$)**:
+  - In-memory LRU rate limiter with a strict limit (`MAX_BUCKETS = 5,000`) preventing memory leaks on free single-instance containers.
+  - **Carrier / School Wi-Fi Protection**: Dual-layer rate limiting separates shared network IPs (`60 req/min`) from individual student IDs (`6 req/min`), ensuring an entire classroom isn't blocked by one student's activity.
+- **In-Memory Exam Question Cache**:
+  - Caches exam questions and options in memory for 60 seconds, eliminating over **70% of repetitive database round-trips** during concurrent exam sessions.
+  - Cache is invalidated immediately when exams are updated, imported, or deleted.
+- **Neon Stale Socket & Cold-Start Resilience**:
+  - Connection pool configuration (`max: 5`, `idleTimeoutMillis: 10,000`, `keepAlive: true`) combined with automatic single-retry queries on cold Neon instance wake-ups.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
 | :--- | :--- |
-| **Next.js 16 (App Router)** | إطار العمل الأساسي (Server Actions + API Routes) |
-| **React 19** | واجهة المستخدم التفاعلية |
-| **TypeScript** | أمان الأنماط وفحص الأخطاء وقت البناء |
-| **PostgreSQL + Prisma 7** | قاعدة البيانات وإدارة الـ Schema مع `@prisma/adapter-pg` |
-| **Tailwind CSS v4** | التنسيقات ونظام الألوان المتوافق مع الوضع الليلي (Dark Mode) |
-| **PWA (Manifest + Service Worker)** | دعم التثبيت على الهاتف وتصفح الواجهة بدون انقطاع |
-| **Sonner & Radix UI** | التنبيهات المنبثقة التفاعلية والمكونات عالية الجودة |
-| **Vitest** | اختبارات الوحدة الشاملة (Unit Tests) لسياسات التصحيح والأمان |
+| **Framework** | [Next.js 16](https://nextjs.org/) (App Router, Server Actions, Metadata Routes) |
+| **UI & Styling** | [React 19](https://react.dev/), [Tailwind CSS v4](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/), [Sonner](https://sonner.emilkowal.ski/) |
+| **PWA** | Web App Manifest (`manifest.ts`), Custom Service Worker (`sw.js`), Apple Web App tags |
+| **Database & ORM** | [PostgreSQL (Neon)](https://neon.tech/), [Prisma 7](https://www.prisma.io/) with `@prisma/adapter-pg` |
+| **Language** | [TypeScript](https://www.typescriptlang.org/) |
+| **Testing** | [Vitest](https://vitest.dev/) (Unit testing policy, grading engine, and auth suites) |
+| **Security** | `scrypt` password hashing, tokenized student session access, input sanitization via [Zod](https://zod.dev/) |
 
 ---
 
-## 🚀 البدء السريع (Quick Start)
+## 🚀 Getting Started
 
-### المتطلبات الأساسية
-- **Node.js** إصدار `>= 20.19`
-- حساب مجاني على **[Neon Console](https://console.neon.tech)** أو قاعدة بيانات PostgreSQL محلية.
+### Prerequisites
+- **Node.js** `>= 20.19`
+- A free PostgreSQL database from [Neon](https://console.neon.tech) or a local PostgreSQL instance.
 
-### خطوات التثبيت والتشغيل محلياً
+### Installation
 
-1. **استنساخ المستودع**:
-```bash
-git clone https://github.com/madany-ai/exam-online.git
-cd exam-online
-```
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/madany-ai/exam-online.git
+   cd exam-online
+   ```
 
-2. **تثبيت الحزم**:
-```bash
-npm install
-```
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-3. **إعداد متغيرات البيئة**:
-انسخ ملف `.env.example` إلى `.env`:
-```bash
-cp .env.example .env
-```
-املأ قيم المتغيرات داخل `.env`:
-```env
-# رابط قاعدة البيانات المجمّعة من Neon (Pooled)
-DATABASE_URL="postgresql://USER:PASSWORD@ep-xxx-pooler.REGION.aws.neon.tech/neondb?sslmode=require"
+3. **Configure Environment Variables**:
+   Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+   Fill in your connection credentials:
+   ```env
+   # Neon Pooled connection string (PgBouncer)
+   DATABASE_URL="postgresql://USER:PASSWORD@ep-xxx-pooler.REGION.aws.neon.tech/neondb?sslmode=require"
 
-# رابط قاعدة البيانات المباشر للترحيلات (Unpooled)
-DATABASE_URL_UNPOOLED="postgresql://USER:PASSWORD@ep-xxx.REGION.aws.neon.tech/neondb?sslmode=require"
+   # Neon Direct connection string (for migrations)
+   DATABASE_URL_UNPOOLED="postgresql://USER:PASSWORD@ep-xxx.REGION.aws.neon.tech/neondb?sslmode=require"
 
-# رابط التطبيق
-APP_URL="http://localhost:3000"
-```
+   # Base URL of the application
+   APP_URL="http://localhost:3000"
+   ```
 
-4. **تطبيق جداول قاعدة البيانات**:
-```bash
-npm run db:deploy
-```
+4. **Deploy Database Schema**:
+   ```bash
+   npm run db:deploy
+   ```
 
-5. **إنشاء حساب معلّم للدخول**:
-```bash
-npm run teacher:create
-```
-*(أو استخدم `npm run db:seed` لإنشاء بيانات تجريبية مع اختبار جاهز)*.
+5. **Create Teacher Account**:
+   Run the interactive CLI script to create your administrative login:
+   ```bash
+   npm run teacher:create
+   ```
+   *(Alternatively, run `npm run db:seed` to populate sample exams and teacher credentials).*
 
-6. **تشغيل السيرفر المحلي**:
-```bash
-npm run dev
-```
-افتح المتصفح على: `http://localhost:3000`
-
----
-
-## ☁️ النشر على Vercel (Production Deployment)
-
-1. ارفع المشروع إلى حسابك على GitHub:
-```bash
-git remote add origin https://github.com/madany-ai/exam-online.git
-git branch -M main
-git push -u origin main
-```
-2. ادخل على **[Vercel](https://vercel.com/new)** واختر المستودع.
-3. في إعدادات **Environment Variables** على Vercel، أضف:
-   - `DATABASE_URL`: رابط Neon Pooled (الذي يحتوي على `-pooler`).
-   - `DATABASE_URL_UNPOOLED`: رابط Neon Direct.
-   - `APP_URL`: رابط موقعك المخصص على Vercel (مثل `https://exam-online.vercel.app`).
-4. اضغط **Deploy**. يقوم Vercel بتنفيذ `prisma generate && next build` تلقائياً.
+6. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 📄 بنية ملف استيراد الأسئلة (JSON Format)
+## ☁️ Production Deployment (Vercel)
 
-يمكن استخدام ملف JSON بالصيغة التالية لإنشاء امتحان كامل بضغطة زر واحدة:
+1. **Push to GitHub**:
+   ```bash
+   git add .
+   git commit -m "feat: complete exam platform"
+   git branch -M main
+   git remote add origin https://github.com/madany-ai/exam-online.git
+   git push -u origin main
+   ```
+
+2. **Import into Vercel**:
+   - Go to [vercel.com/new](https://vercel.com/new) and select the `exam-online` repository.
+   - Build and Output settings are pre-configured in `package.json` (`prisma generate && next build`).
+
+3. **Set Environment Variables in Vercel**:
+   Add the following under **Project Settings > Environment Variables**:
+
+   | Key | Description | Example |
+   | :--- | :--- | :--- |
+   | `DATABASE_URL` | Neon Pooled URL (contains `-pooler`) | `postgresql://...@ep-xxx-pooler...` |
+   | `DATABASE_URL_UNPOOLED` | Neon Direct URL (without `-pooler`) | `postgresql://...@ep-xxx...` |
+   | `APP_URL` | Production domain name | `https://exam-online.vercel.app` |
+
+4. **Click Deploy**. Vercel will build and deploy the production application.
+
+---
+
+## 📄 JSON Question Import Specification
+
+Questions can be imported in bulk using a structured JSON document:
 
 ```json
 {
-  "title": "اختبار شهر أكتوبر — مادة الأحياء",
-  "description": "اختبار تجريبي للمراجعة النهائية",
+  "title": "General Biology Quiz",
+  "description": "Comprehensive review of cell biology and genetics",
   "defaultDurationMinutes": 30,
   "questions": [
     {
       "id": "q1",
       "type": "SINGLE_CHOICE",
-      "text": "ما هي الوحدة الوظيفية الأساسية للجهاز العصبي؟",
+      "text": "What is the primary power-generating organelle in eukaryotic cells?",
       "points": 2,
-      "explanation": "الخلية العصبية (العصبون) هي المسؤولة عن نقل الإشارات العصبية.",
+      "explanation": "Mitochondria produce the majority of the cell's ATP supply.",
       "options": [
-        { "id": "opt1", "text": "الخلية العصبية (العصبون)", "isCorrect": true },
-        { "id": "opt2", "text": "الخلية العضلية", "isCorrect": false },
-        { "id": "opt3", "text": "النفرون", "isCorrect": false },
-        { "id": "opt4", "text": "الخلية الكبدية", "isCorrect": false }
+        { "id": "opt1", "text": "Mitochondria", "isCorrect": true },
+        { "id": "opt2", "text": "Ribosome", "isCorrect": false },
+        { "id": "opt3", "text": "Endoplasmic Reticulum", "isCorrect": false },
+        { "id": "opt4", "text": "Golgi Apparatus", "isCorrect": false }
       ]
     },
     {
       "id": "q2",
       "type": "TRUE_FALSE",
-      "text": "تعتبر الميتوكوندريا هي مصنع الطاقة في الخلية.",
+      "text": "DNA replication occurs during the S-phase of the cell cycle.",
       "points": 1,
-      "explanation": "الميتوكوندريا هي المسؤولة عن إنتاج جزيئات ATP في الخلية.",
+      "explanation": "The S-phase (Synthesis Phase) is specifically dedicated to DNA replication.",
       "options": [
-        { "id": "t", "text": "صواب", "isCorrect": true },
-        { "id": "f", "text": "خطأ", "isCorrect": false }
+        { "id": "t", "text": "True", "isCorrect": true },
+        { "id": "f", "text": "False", "isCorrect": false }
       ]
     }
   ]
 }
 ```
 
-*أنواع الأسئلة المدعومة:*
-- `SINGLE_CHOICE`: اختيار من متعدد (إجابة واحدة صحيحة).
-- `MULTIPLE_CHOICE`: اختيار أكثر من إجابة صحيحة.
-- `TRUE_FALSE`: صواب أو خطأ.
+### Supported Question Types:
+- `SINGLE_CHOICE`: Single-select multiple choice question.
+- `MULTIPLE_CHOICE`: Multi-select multiple choice question.
+- `TRUE_FALSE`: Binary true or false question.
 
 ---
 
-## 🧪 أوامر الاختبار والفحص
+## 🧪 Testing & Verification
 
 ```bash
-# فحص أنواع TypeScript
+# Type check TypeScript files
 npm run typecheck
 
-# فحص كود التنسيق والجودة (ESLint)
+# Lint source code
 npm run lint
 
-# تشغيل اختبارات الوحدة الشاملة
+# Run all unit tests
 npm run test
 ```
 
 ---
 
-## 🔒 الأمان والخصوصية (Security Architecture)
-- **حماية مفاتيح الإجابات**: لا يتم إرسال الخيارات الصحيحة (`isCorrect`) أو شروحات الأسئلة إلى متصفح الطالب أثناء أداء الاختبار نهائياً؛ كل عمليات التدريج والتصحيح تتم بالكامل داخل الخادم.
-- **تشفير كلمات المرور والرموز**: استخدام مكتبة التشفير المعيارية `crypto.scrypt` لكلمات مرور المعلمين، وتشفير أحادي الاتجاه بمعيار SHA-256 لأرقام تليفونات الطلاب ورموز الدخول لحماية خصوصيتهم ومنع اختراق الجلسات.
+## 🔒 Security Design
+
+- **Client Zero-Trust**: Correct answers (`isCorrect`) and explanation notes are never sent over the network to student browsers during active exams. All grading calculations execute server-side in a single atomic transaction.
+- **Cryptographic Student Tokens**: Student attempts are secured using cryptographically strong 256-bit access tokens stored as SHA-256 hashes.
+- **Password Protection**: Teacher passwords are hashed using Node.js's native `scrypt` implementation with unique random salts.
