@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "1.0",
+  "title": "اختبار الرياضيات — الدرس الأول",
+  "description": "مثال على ملف استيراد الأسئلة يدعم الأنواع الثلاثة المدعومة.",
+  "defaultDurationMinutes": 30,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "SINGLE_CHOICE",
+      "text": "ما ناتج ٢ + ٢ ؟",
+      "points": 1,
+      "options": [
+        {
+          "id": "a",
+          "text": "٣"
+        },
+        {
+          "id": "b",
+          "text": "٤"
+        },
+        {
+          "id": "c",
+          "text": "٥"
+        }
+      ],
+      "correctOptionIds": [
+        "b"
+      ],
+      "explanation": "٢ + ٢ = ٤"
+    },
+    {
+      "id": "q2",
+      "type": "TRUE_FALSE",
+      "text": "تدور الأرض حول الشمس.",
+      "points": 1,
+      "options": [
+        {
+          "id": "true",
+          "text": "صح"
+        },
+        {
+          "id": "false",
+          "text": "خطأ"
+        }
+      ],
+      "correctOptionIds": [
+        "true"
+      ]
+    },
+    {
+      "id": "q3",
+      "type": "MULTIPLE_CHOICE",
+      "text": "أي الأعداد التالية زوجية؟",
+      "points": 2,
+      "options": [
+        {
+          "id": "a",
+          "text": "٢"
+        },
+        {
+          "id": "b",
+          "text": "٣"
+        },
+        {
+          "id": "c",
+          "text": "٤"
+        }
+      ],
+      "correctOptionIds": [
+        "a",
+        "c"
+      ],
+      "explanation": "العدد الزوجي يقبل القسمة على ٢ بدون باقٍ."
+    },
+    {
+      "id": "q4",
+      "type": "SINGLE_CHOICE",
+      "text": "كم عدد أضلاع المربع؟",
+      "points": 1.5,
+      "options": [
+        {
+          "id": "a1",
+          "text": "٣"
+        },
+        {
+          "id": "a2",
+          "text": "٤"
+        },
+        {
+          "id": "a3",
+          "text": "٥"
+        },
+        {
+          "id": "a4",
+          "text": "٦"
+        }
+      ],
+      "correctOptionIds": [
+        "a2"
+      ]
+    }
+  ]
+}

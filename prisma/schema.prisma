@@ -1,0 +1,203 @@
+// نظام إدارة الاختبارات — مخطط قاعدة البيانات (PostgreSQL + Prisma 7)
+//
+// ملاحظات معمارية:
+// - كل جدول Proprietor (Exam) مربوط بـ teacherId، والتحقق من الملكية يتم على الخادم
+//   في كل عملية حساسة، فإضافة معلم آخر لاحقاً لا تكسر أي شيء.
+// - إجابات الاختبار (Correct) مخزّنة relationally في QuestionOption.isCorrect
+//   ولا تُسلسَل أبداً في استجابات الطالب العامة.
+// - رموز الوصول (publicToken / accessTokenHash) مخزّنة كبصمات SHA-256، لا كنص صريح.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  // مطلوب حتى يعمل prisma-client المولّد مع tsx (سكربتات البذرة والاختبارات)
+  importFileExtension = "ts"
+}
+
+// Prisma 7: رابط الاتصال يُمرَّر عبر prisma.config.ts (للـ CLI)
+// وعبر PrismaPg adapter (Para runtime). لا يُكتب url داخل كتلة datasource.
+datasource db {
+  provider = "postgresql"
+}
+
+/// حساب المعلم. لا يوجد تسجيل عام — الحسابات تُنشأ بأمر CLI أو سكربت الإعداد.
+model Teacher {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  exams Exam[]
+
+  sessions TeacherSession[]
+}
+
+model TeacherSession {
+  id        String   @id @default(cuid())
+  /// بصمة SHA-256 لرمز الجلسة (لا نخزّن الرمز نفسه)
+  tokenHash String   @unique
+  teacherId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId])
+  @@index([expiresAt])
+}
+
+enum ExamStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum ResultVisibility {
+  IMMEDIATE
+  MANUAL
+}
+
+model Exam {
+  id          String  @id @default(cuid())
+  /// معرّف عام عشوائي (>=128 بت) يظهر في رابط الطالب
+  publicToken String @unique
+
+  teacherId String
+  title     String
+  description String?
+
+  /// مدة الاختبار بالدقائق — تُحسب من لحظة البدء على الخادم
+  durationMinutes Int
+  /// نافذة التوفر الاختيارية
+  startsAt        DateTime?
+  endsAt          DateTime?
+
+  maxAttempts      Int @default(1)
+  shuffleQuestions Boolean @default(false)
+  shuffleOptions   Boolean @default(false)
+
+  resultVisibility ResultVisibility @default(MANUAL)
+  status           ExamStatus       @default(DRAFT)
+  /// تاريخ إصدار النتائج للطلاب (يظل отдельاً عن حالة الاختبار)
+  resultsReleasedAt DateTime?
+
+  /// هل يطلب المعلم مُعرّفاً للطالب (رقم/كود)؟ يُستخدم أيضاً لتطبيق حد المحاولات
+  requiresStudentId Boolean @default(false)
+  studentIdLabel     String?
+
+  /// تعليمات تظهر للطالب قبل بدء الاختبار
+  instructions String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacher   Teacher        @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  questions Question[]
+  attempts  ExamAttempt[]
+
+  @@index([teacherId, status])
+  @@index([publicToken])
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+}
+
+model Question {
+  id       String       @id @default(cuid())
+  examId   String
+  /// المعرّف كما ورد في ملف JSON المستورد (قريد داخل الاختبار الواحد)
+  externalId String
+  type     QuestionType
+  text     String
+  /// درجة السؤال من نوع Decimal لتفادي أخطاء الفاصلة العائمة
+  points   Decimal      @db.Decimal(8, 2)
+  explanation String?
+  order    Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  exam     Exam             @relation(fields: [examId], references: [id], onDelete: Cascade)
+  options  QuestionOption[]
+  answers  AttemptAnswer[]
+
+  @@unique([examId, externalId])
+  @@unique([examId, order])
+  @@index([examId])
+}
+
+model QuestionOption {
+  id         String  @id @default(cuid())
+  questionId String
+  externalId String
+  text       String
+  order      Int
+  /// مفتاح الإجابة — لا يُسلسَل في أي استجابة عامة
+  isCorrect  Boolean @default(false)
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, externalId])
+  @@unique([questionId, order])
+  @@index([questionId])
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+}
+
+model ExamAttempt {
+  id      String        @id @default(cuid())
+  examId  String
+  status  AttemptStatus @default(IN_PROGRESS)
+
+  studentName       String
+  studentIdentifier String?
+  /// بصمة معرّف الطالب (SHA-256) — أساس تطبيق حدّ المحاولات
+  identifierHash    String?
+
+  /// بصمة رمز الوصول الخاص بهذا الطالب (SHA-256)
+  accessTokenHash String @unique
+
+  startedAt   DateTime  @default(now())
+  /// الموعد النهائي الذي يفرضه الخادم = min(بداية + المدة، نهاية النافذة)
+  expiresAt   DateTime
+  submittedAt DateTime?
+  gradedAt    DateTime?
+
+  earnedScore  Decimal? @db.Decimal(10, 2)
+  maximumScore Decimal? @db.Decimal(10, 2)
+  percentage   Decimal? @db.Decimal(5, 2)
+
+  exam      Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  answers   AttemptAnswer[]
+
+  @@index([examId, identifierHash])
+  @@index([examId, status])
+  @@index([examId, submittedAt])
+}
+
+model AttemptAnswer {
+  id         String  @id @default(cuid())
+  attemptId  String
+  questionId String
+  /// المعرّفات الخارجية للخيارات التي اختارها الطالب (Postgres text[])
+  selectedOptionIds String[]
+  earnedPoints Decimal @default(0) @db.Decimal(8, 2)
+  isCorrect    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attempt  ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, questionId])
+  @@index([questionId])
+}
