@@ -212,3 +212,8 @@ npm run test
 - **Client Zero-Trust**: Correct answers (`isCorrect`) and explanation notes are never sent over the network to student browsers during active exams. All grading calculations execute server-side in a single atomic transaction.
 - **Cryptographic Student Tokens**: Student attempts are secured using cryptographically strong 256-bit access tokens stored as SHA-256 hashes.
 - **Password Protection**: Teacher passwords are hashed using Node.js's native `scrypt` implementation with unique random salts.
+
+- **Client Zero-Trust**: Correct answers (`isCorrect`) and explanation notes are never sent over the network to student browsers during active exams. All grading calculations execute server-side in a single atomic transaction.
+- **Cryptographic Student Tokens**: Student attempts are secured using cryptographically strong 256-bit access tokens stored as SHA-256 hashes.
+- **Password Protection**: Teacher passwords are hashed using Node.js's native `scrypt` implementation with unique random salts.
+
