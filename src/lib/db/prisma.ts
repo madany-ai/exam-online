@@ -1,5 +1,4 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { attachDatabasePool } from "@vercel/functions";
 import { PrismaClient } from "@/generated/prisma/client";
 
 /**
@@ -9,8 +8,7 @@ import { PrismaClient } from "@/generated/prisma/client";
  *  - `DATABASE_URL` هو رابط الـ Pooler (PgBouncer) — لحركة التطبيق العادية.
  *  - `DATABASE_URL_UNPOOLED` هو رابط مباشر، ويُستخدم للترحيلات فقط
  *    (انظر prisma.config.ts) لأن PgBouncer لا يدعم عمليات على مستوى الجلسة.
- *  - على Vercel نربط مجموعة الاتصالات بدورة حياة الدالة عبر attachDatabasePool
- *    حتى لا تُفتح اتصالات جديدة مع كل طلب (Fluid compute).
+ *  - `@prisma/adapter-pg` يدير مجمّع الاتصالات تلقائياً بإعدادات محسّنة لخطة Neon المجانية.
  *
  * معيار الاختبارات (PostgreSQL محلي) يمرّ بنفس الكود: نفس المُهيّئ pg.
  */
@@ -33,11 +31,6 @@ function createClient(): PrismaClient {
     connectionTimeoutMillis: 15_000,
     keepAlive: true,
   });
-
-  // على Vercel فقط: نتيح للمنصّة إدارة عمر الاتصال عبر نداءات متتابعة.
-  if (process.env.VERCEL) {
-    attachDatabasePool(adapter as unknown as Parameters<typeof attachDatabasePool>[0]);
-  }
 
   return new PrismaClient({
     adapter,
