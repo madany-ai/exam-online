@@ -139,14 +139,18 @@ async function querySessionWithRetry(hashed: string) {
     });
   } catch {
     // إعادة المحاولة مرة واحدة في حال استيقاظ قاعدة البيانات المجانية (Neon Cold Start) أو انقطاع اتصال خامل
-    await new Promise((resolve) => setTimeout(resolve, 150));
-    return prisma.teacherSession.findUnique({
-      where: { tokenHash: hashed },
-      select: {
-        expiresAt: true,
-        teacher: { select: { id: true, email: true, name: true } },
-      },
-    });
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    try {
+      return await prisma.teacherSession.findUnique({
+        where: { tokenHash: hashed },
+        select: {
+          expiresAt: true,
+          teacher: { select: { id: true, email: true, name: true } },
+        },
+      });
+    } catch {
+      return null;
+    }
   }
 }
 

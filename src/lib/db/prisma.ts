@@ -26,7 +26,7 @@ function createClient(): PrismaClient {
   const adapter = new PrismaPg({
     connectionString,
     // إعدادات متوازنة للسيرفر المجاني + Neon Pooler لتفادي الاتصالات الخاملة المقطوعة (Stale Sockets):
-    max: 5,
+    max: 10,
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 15_000,
     keepAlive: true,
@@ -39,11 +39,10 @@ function createClient(): PrismaClient {
 }
 
 /**
- * في بيئة التطوير نعيد استخدام العميل بين عمليات إعادة التحميل (HMR)
- * حتى لا نستنزف اتصالات قاعدة البيانات.
+ * إعادة استخدام عميل Prisma ومجمّع الاتصالات داخل نفس الحاوية (Container) لتفادي استنزاف الاتصالات
  */
 export const prisma: PrismaClient = globalThis.__examPrisma ?? createClient();
 
-if (process.env.NODE_ENV !== "production") {
+if (!globalThis.__examPrisma) {
   globalThis.__examPrisma = prisma;
 }
